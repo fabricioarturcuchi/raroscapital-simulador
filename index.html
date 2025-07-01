@@ -1,138 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Raros Capital - Simulador de Consórcio</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0; padding: 20px;
-    background: #f0f3f7;
-    color: #1d3557;
-  }
-  .container {
-    max-width: 960px;
-    margin: auto;
-    background: #fff;
-    border-radius: 10px;
-    padding: 25px 30px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    display: flex;
-    gap: 40px;
-    flex-wrap: wrap;
-  }
-  .left, .right {
-    flex: 1 1 400px;
-    min-width: 300px;
-  }
-  .logo {
-    max-width: 180px;
-    margin-bottom: 20px;
-    display: block;
-  }
-  h1 {
-    margin: 0 0 10px;
-    font-weight: 700;
-    font-size: 28px;
-    color: #1d3557;
-  }
-  p.subtitle {
-    color: #555;
-    font-size: 16px;
-    margin-bottom: 25px;
-  }
-  label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
-    margin-top: 15px;
-    color: #2a3a54;
-  }
-  input, select {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: 1.5px solid #ccc;
-    transition: border-color 0.3s ease;
-  }
-  input:focus, select:focus {
-    outline: none;
-    border-color: #457b9d;
-  }
-  input[readonly] {
-    background: #f5f7fa;
-    cursor: not-allowed;
-  }
-  button {
-    margin-top: 25px;
-    width: 100%;
-    background-color: #1d3557;
-    color: white;
-    font-weight: 700;
-    font-size: 18px;
-    padding: 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-  }
-  button:hover {
-    background-color: #457b9d;
-  }
-  #resultado {
-    margin-top: 30px;
-    padding: 25px;
-    background: #eaf4f9;
-    border-radius: 10px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-    color: #1d3557;
-  }
-  #resultado h3 {
-    margin-top: 0;
-    font-weight: 700;
-    font-size: 22px;
-    margin-bottom: 15px;
-  }
-  #resultado p {
-    font-size: 16px;
-    margin: 6px 0;
-  }
-  #resultado p span.value {
-    font-weight: 700;
-    font-size: 20px;
-    color: #e63946;
-  }
-  .thanks {
-    margin-top: 30px;
-    font-weight: 600;
-    font-size: 18px;
-    color: #2a3a54;
-    text-align: center;
-  }
-  /* Flex align labels and inputs */
-  form label {
-    font-size: 14px;
-  }
-  /* PDF button */
-  #btnPdf {
-    margin-top: 15px;
-    background-color: #e63946;
-  }
-  #btnPdf:hover {
-    background-color: #a62a32;
-  }
-  @media(max-width: 720px) {
-    .container {
-      flex-direction: column;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Raros Capital - Simulador de Consórcio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0; padding: 20px;
+      background: #f0f3f7;
+      color: #1d3557;
     }
-  }
-</style>
+    .container {
+      max-width: 960px;
+      margin: auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 25px 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .left, .right {
+      flex: 1 1 400px;
+      min-width: 300px;
+    }
+    .logo {
+      max-width: 180px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-weight: 700;
+      font-size: 28px;
+      color: #1d3557;
+    }
+    p.subtitle {
+      color: #555;
+      font-size: 16px;
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      margin-top: 15px;
+      color: #2a3a54;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #457b9d;
+    }
+    input[readonly] {
+      background: #f5f7fa;
+      cursor: not-allowed;
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      background-color: #1d3557;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+    }
+    button:hover {
+      background-color: #457b9d;
+    }
+    #resultado {
+      margin-top: 30px;
+      padding: 25px;
+      background: #eaf4f9;
+      border-radius: 10px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+      color: #1d3557;
+    }
+    #resultado h3 {
+      margin-top: 0;
+      font-weight: 700;
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    #resultado p {
+      font-size: 16px;
+      margin: 6px 0;
+    }
+    #resultado p span.value {
+      font-weight: 700;
+      font-size: 20px;
+      color: #e63946;
+    }
+    .thanks {
+      margin-top: 30px;
+      font-weight: 600;
+      font-size: 18px;
+      color: #2a3a54;
+      text-align: center;
+    }
+    #btnPdf {
+      margin-top: 15px;
+      background-color: #e63946;
+    }
+    #btnPdf:hover {
+      background-color: #a62a32;
+    }
+    @media(max-width: 720px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -142,7 +135,11 @@
     <h1>Raros Capital</h1>
     <p class="subtitle">Descubra qual consórcio combina com você. Preencha seus dados para simular.</p>
 
-    <form id="lead-form" onsubmit="return handleFormSubmit(event)" novalidate>
+    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" id="lead-form" onsubmit="return handleFormSubmit(event)" novalidate>
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_next" value="javascript:void(0);">
+
       <label for="name">Nome completo *</label>
       <input type="text" id="name" name="name" placeholder="Seu nome completo" required>
 
@@ -159,7 +156,7 @@
       </select>
 
       <label for="valor">Valor total (R$) *</label> 
-      <input type="text" id="valor" oninput="mascaraMoeda(this)" required autocomplete="off" />
+      <input type="text" id="valor" name="valor" oninput="mascaraMoeda(this)" required autocomplete="off" />
 
       <label for="parcelas">Parcelas</label>
       <input type="number" id="parcelas" name="parcelas" readonly>
@@ -187,7 +184,7 @@
   </div>
 </div>
 
-<!-- jsPDF CDN -->
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
@@ -203,41 +200,25 @@
     document.getElementById('parcelas').value = parcelasMap[tipo];
   }
 
-  // Máscara moeda pt-BR (R$xxx.xxx,xx)
   function mascaraMoeda(input) {
-    let valor = input.value;
-
-    // Remove tudo exceto números
-    valor = valor.replace(/\D/g, '');
-
-    // Formata o número para moeda BRL com separadores milhar e decimal
+    let valor = input.value.replace(/\D/g, '');
     valor = (parseInt(valor, 10) || 0).toString();
-
-    // Limpa zeros à esquerda para evitar confusão
     valor = valor.replace(/^0+/, '');
-
-    // Se vazio, volta vazio
-    if(valor === '') {
+    if (valor === '') {
       input.value = '';
       return;
     }
-
-    // Coloca vírgula para os 2 últimos dígitos (centavos)
-    if(valor.length === 1) {
-      valor = '0,0' + valor;
-    } else if(valor.length === 2) {
-      valor = '0,' + valor;
-    } else {
+    if (valor.length === 1) valor = '0,0' + valor;
+    else if (valor.length === 2) valor = '0,' + valor;
+    else {
       let intPart = valor.slice(0, -2);
       let decPart = valor.slice(-2);
-      // Adiciona pontos como separador de milhar
       intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       valor = intPart + ',' + decPart;
     }
     input.value = 'R$ ' + valor;
   }
 
-  // Máscara telefone (99) 99999-9999
   function mascaraTelefone(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0,11);
@@ -250,7 +231,6 @@
     }
   }
 
-  // Form submit handler
   function handleFormSubmit(event) {
     event.preventDefault();
 
@@ -260,13 +240,11 @@
     const tipo = document.getElementById('tipo').value;
     const valorRaw = document.getElementById('valor').value.trim();
 
-    // Validações básicas
     if (!name || !email || !phone || !valorRaw) {
       alert('Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
 
-    // Extrai número do valor
     let valorNum = valorRaw.replace(/[R$\.\s]/g, '').replace(',', '.');
     valorNum = parseFloat(valorNum);
     if (isNaN(valorNum)) {
@@ -282,14 +260,9 @@
 
     const parcelas = parcelasMap[tipo];
     const taxa = taxaMap[tipo];
-
-    // Calcula valor total com taxa
     const valorTotal = valorNum * (1 + taxa);
-
-    // Calcula parcela mensal
     const parcelaMensal = valorTotal / parcelas;
 
-    // Exibe resultado
     document.getElementById('resNome').textContent = name;
     document.getElementById('resEmail').textContent = email;
     document.getElementById('resPhone').textContent = phone;
@@ -302,32 +275,15 @@
 
     document.getElementById('resultado').style.display = 'block';
 
-    // Enviar lead via fetch sem mensagem para o usuário
-    enviarLead({name, email, phone, tipo, valor: valorNum});
-
+    // Submete o formulário FormSubmit manualmente
+    document.getElementById('lead-form').submit();
     return false;
   }
 
-  // Envia dados para API de lead (exemplo)
-  function enviarLead(data) {
-    // Exemplo: substituir URL pelo endpoint real
-    const url = '65709bc8-db25-43ad-9d94-89fe01b115e7'; 
-
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }).catch(() => {
-      // Não exibir mensagens ao usuário, falha silenciosa
-    });
-  }
-
-  // Inicializa parcelas no carregamento
   window.onload = () => {
     atualizarParcelas();
   };
 
-  // Gera PDF usando jsPDF com layout bonito e frase motivacional
   async function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -342,13 +298,10 @@
       doc.setTextColor('#1d3557');
       doc.setFontSize(22);
       doc.text('Raros Capital', 70, 20);
-
       doc.addImage(img, 'PNG', 15, 10, 40, 20);
-
       doc.setDrawColor('#e63946');
       doc.setLineWidth(1.5);
       doc.line(15, 30, 195, 30);
-
       doc.setFontSize(18);
       doc.setTextColor('#e63946');
       doc.text('Resultado da Simulação', 15, 40);
@@ -357,7 +310,6 @@
       doc.setTextColor('#000');
       let y = 50;
       const lineHeight = 10;
-
       function addLine(label, value) {
         doc.setFont(undefined, 'bold');
         doc.text(label, 15, y);
