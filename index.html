@@ -135,31 +135,27 @@
     <h1>Raros Capital</h1>
     <p class="subtitle">Descubra qual consórcio combina com você. Preencha seus dados para simular.</p>
 
-    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" id="lead-form" onsubmit="return handleFormSubmit(event)" novalidate>
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_next" value="javascript:void(0);">
-
+    <form id="lead-form" onsubmit="return handleFormSubmit(event)" novalidate>
       <label for="name">Nome completo *</label>
-      <input type="text" id="name" name="name" placeholder="Seu nome completo" required>
+      <input type="text" id="name" required>
 
       <label for="email">E-mail *</label>
-      <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
+      <input type="email" id="email" required>
 
       <label for="phone">WhatsApp (com DDD) *</label>
-      <input type="tel" id="phone" name="phone" placeholder="(99) 99999-9999" required maxlength="15" oninput="mascaraTelefone(this)" >
+      <input type="tel" id="phone" maxlength="15" oninput="mascaraTelefone(this)" required>
 
       <label for="tipo">Tipo de Consórcio *</label>
-      <select id="tipo" name="tipo" onchange="atualizarParcelas()">
+      <select id="tipo" onchange="atualizarParcelas()">
         <option value="imovel">Imóvel</option>
         <option value="auto">Automóvel</option>
       </select>
 
       <label for="valor">Valor total (R$) *</label> 
-      <input type="text" id="valor" name="valor" oninput="mascaraMoeda(this)" required autocomplete="off" />
+      <input type="text" id="valor" oninput="mascaraMoeda(this)" required>
 
       <label for="parcelas">Parcelas</label>
-      <input type="number" id="parcelas" name="parcelas" readonly>
+      <input type="number" id="parcelas" readonly>
 
       <button type="submit">Gerar Simulação</button>
     </form>
@@ -184,9 +180,7 @@
   </div>
 </div>
 
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <script>
   const parcelasMap = { imovel: 220, auto: 84 };
   const taxaMap = { imovel: 0.22, auto: 0.16 };
@@ -200,121 +194,107 @@
     document.getElementById('parcelas').value = parcelasMap[tipo];
   }
 
-  function mascaraMoeda(input) {
-    let valor = input.value.replace(/\D/g, '');
-    valor = (parseInt(valor, 10) || 0).toString();
-    valor = valor.replace(/^0+/, '');
-    if (valor === '') {
-      input.value = '';
-      return;
-    }
-    if (valor.length === 1) valor = '0,0' + valor;
-    else if (valor.length === 2) valor = '0,' + valor;
-    else {
-      let intPart = valor.slice(0, -2);
-      let decPart = valor.slice(-2);
-      intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      valor = intPart + ',' + decPart;
-    }
-    input.value = 'R$ ' + valor;
-  }
-
   function mascaraTelefone(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0,11);
-    if (v.length > 6) {
-      input.value = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
-    } else if (v.length > 2) {
-      input.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
-    } else if (v.length > 0) {
-      input.value = `(${v}`;
+    v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+    v = v.replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+    input.value = v;
+  }
+
+  function mascaraMoeda(input) {
+    let valor = input.value.replace(/\D/g, '');
+    if (!valor) {
+      input.value = '';
+      return;
     }
+    valor = (parseInt(valor, 10) / 100).toFixed(2);
+    valor = valor.replace('.', ',');
+    valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    input.value = 'R$ ' + valor;
   }
 
   function handleFormSubmit(event) {
     event.preventDefault();
-
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const tipo = document.getElementById('tipo').value;
-    const valorRaw = document.getElementById('valor').value.trim();
+    let valorStr = document.getElementById('valor').value.trim();
 
-    if (!name || !email || !phone || !valorRaw) {
+    if (!name || !email || !phone || !valorStr) {
       alert('Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
 
-    let valorNum = valorRaw.replace(/[R$\.\s]/g, '').replace(',', '.');
-    valorNum = parseFloat(valorNum);
-    if (isNaN(valorNum)) {
-      alert('Informe um valor válido.');
-      return false;
-    }
+    valorStr = valorStr.replace(/\D/g, '');
+    const valor = parseFloat(valorStr) / 100;
 
     const { min, max } = minMaxValor[tipo];
-    if (valorNum < min || valorNum > max) {
-      alert(`O valor para consórcio de ${tipo === 'imovel' ? 'Imóvel' : 'Automóvel'} deve ser entre R$ ${min.toLocaleString('pt-BR')} e R$ ${max.toLocaleString('pt-BR')}.`);
+    if (valor < min || valor > max) {
+      alert(`Para ${tipo === 'imovel' ? 'imóveis' : 'automóveis'}, o valor deve estar entre R$ ${min.toLocaleString('pt-BR')} e R$ ${max.toLocaleString('pt-BR')}.`);
       return false;
     }
 
+    document.getElementById('parcelas').value = parcelasMap[tipo];
+    mostrarResultado({ name, email, phone, tipo, valor });
+    enviarEmailForm(event.target);
+    return false;
+  }
+
+  function mostrarResultado({ name, email, phone, tipo, valor }) {
     const parcelas = parcelasMap[tipo];
     const taxa = taxaMap[tipo];
-    const valorTotal = valorNum * (1 + taxa);
-    const parcelaMensal = valorTotal / parcelas;
+    const valorTotal = valor + valor * taxa;
+    const valorParcela = valorTotal / parcelas;
+
+    const formatBRL = (num) => num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     document.getElementById('resNome').textContent = name;
     document.getElementById('resEmail').textContent = email;
     document.getElementById('resPhone').textContent = phone;
     document.getElementById('resTipo').textContent = tipo === 'imovel' ? 'Imóvel' : 'Automóvel';
-    document.getElementById('resValor').textContent = valorNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    document.getElementById('resParcelas').textContent = parcelas;
-    document.getElementById('resTaxa').textContent = (taxa * 100).toFixed(2) + '%';
-    document.getElementById('resValorTotal').textContent = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    document.getElementById('resParcela').textContent = parcelaMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('resValor').textContent = formatBRL(valor);
+    document.getElementById('resParcelas').textContent = parcelas + 'x';
+    document.getElementById('resTaxa').textContent = (taxa * 100) + '%';
+    document.getElementById('resValorTotal').textContent = formatBRL(valorTotal);
+    document.getElementById('resParcela').textContent = formatBRL(valorParcela);
 
     document.getElementById('resultado').style.display = 'block';
-
-    // Submete o formulário FormSubmit manualmente
-    document.getElementById('lead-form').submit();
-    return false;
   }
 
-  window.onload = () => {
-    atualizarParcelas();
-  };
+  function enviarEmailForm(form) {
+    const data = new FormData(form);
+    data.append('_captcha', 'false');
+    data.append('_subject', 'Novo lead de simulação - Raros Capital');
+    data.append('_template', 'table');
 
-  async function gerarPDF() {
+    fetch('https://formsubmit.co/ajax/fabricio@raroscapital.com.br', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: data
+    }).catch(err => console.error('Erro ao enviar lead:', err));
+  }
+
+  function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
-    const imgUrl = 'https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png';
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = imgUrl;
+    img.src = "https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png";
 
     img.onload = function () {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor('#1d3557');
-      doc.setFontSize(22);
-      doc.text('Raros Capital', 70, 20);
-      doc.addImage(img, 'PNG', 15, 10, 40, 20);
-      doc.setDrawColor('#e63946');
-      doc.setLineWidth(1.5);
-      doc.line(15, 30, 195, 30);
-      doc.setFontSize(18);
-      doc.setTextColor('#e63946');
-      doc.text('Resultado da Simulação', 15, 40);
+      doc.addImage(img, 'PNG', 10, 10, 50, 20);
+      doc.setFontSize(22).setTextColor('#1d3557').text('Raros Capital', 70, 25);
+      doc.setFontSize(18).setTextColor('#e63946').text('Resultado da Simulação', 10, 45);
+      doc.setFontSize(12).setTextColor('#000');
 
-      doc.setFontSize(12);
-      doc.setTextColor('#000');
-      let y = 50;
-      const lineHeight = 10;
+      const leftCol = 10;
+      let y = 55;
+      const lineHeight = 7;
+
       function addLine(label, value) {
-        doc.setFont(undefined, 'bold');
-        doc.text(label, 15, y);
-        doc.setFont(undefined, 'normal');
-        doc.text(value, 80, y);
+        doc.setFont(undefined, 'bold').text(label, leftCol, y);
+        doc.setFont(undefined, 'normal').text(value, leftCol + 50, y);
         y += lineHeight;
       }
 
@@ -326,18 +306,16 @@
       addLine('Valor solicitado:', document.getElementById('resValor').textContent);
       addLine('Parcelas:', document.getElementById('resParcelas').textContent);
       addLine('Taxa administrativa:', document.getElementById('resTaxa').textContent);
-      addLine('Valor total com taxa:', document.getElementById('resValorTotal').textContent);
-      addLine('Valor da parcela mensal:', document.getElementById('resParcela').textContent);
+      addLine('Valor total c/ taxa:', document.getElementById('resValorTotal').textContent);
+      addLine('Parcela mensal:', document.getElementById('resParcela').textContent);
 
       y += 15;
-      doc.setFontSize(14);
-      doc.setTextColor('#457b9d');
-      doc.setFont(undefined, 'italic');
-      doc.text('Invista no seu sonho hoje e conquiste o futuro que merece!', 15, y);
-
-      doc.save('Simulacao_Consorcio_RarosCapital.pdf');
-    };
+      doc.setFontSize(14).setTextColor('#2a3a54').text('Obrigado por usar nosso simulador!', leftCol, y);
+      doc.save('simulacao_raros_capital.pdf');
+    }
   }
+
+  document.addEventListener('DOMContentLoaded', atualizarParcelas);
 </script>
 
 </body>
