@@ -18,6 +18,7 @@
       <input type="email" name="email" placeholder="Seu e-mail" required>
       <input type="tel" name="phone" placeholder="Seu WhatsApp com DDD" required>
 
+      <!-- Configurações do FormSubmit -->
       <input type="hidden" name="_subject" value="Novo lead de simulação - Raros Capital">
       <input type="hidden" name="_captcha" value="false">
       <input type="hidden" name="_template" value="table">
@@ -30,18 +31,21 @@
       <h2>Simulador de Consórcio</h2>
       <label>
         Tipo:
-        <select id="tipo">
+        <select id="tipo" onchange="atualizarParcelas()">
           <option value="imovel">Imóvel</option>
           <option value="auto">Automóvel</option>
         </select>
       </label>
+
       <input type="number" id="valor" placeholder="Valor total (R$)" />
-      <input type="number" id="parcelas" placeholder="Quantidade de parcelas" />
-      <button onclick="calcular()">Calcular</button>
+
+      <input type="number" id="parcelas" placeholder="Parcelas" readonly />
+
+      <button type="button" onclick="calcular()">Calcular</button>
       <div id="resultado"></div>
     </div>
 
-    <!-- Iframe invisível para submissão silenciosa -->
+    <!-- Iframe oculto para submissão silenciosa -->
     <iframe name="hidden_iframe" style="display:none;"></iframe>
   </div>
 
@@ -50,7 +54,14 @@
       setTimeout(() => {
         document.getElementById("lead-form").classList.add("hidden");
         document.getElementById("simulator").classList.remove("hidden");
-      }, 300); // pequeno atraso para não interromper envio
+        atualizarParcelas(); // define parcelas automaticamente com base no tipo
+      }, 300);
+    }
+
+    function atualizarParcelas() {
+      const tipo = document.getElementById("tipo").value;
+      const parcelas = tipo === "imovel" ? 220 : 84;
+      document.getElementById("parcelas").value = parcelas;
     }
 
     function calcular() {
@@ -70,8 +81,8 @@
         taxaAdm = 0.16;
       }
 
-      if (!valor || !parcelas || parcelas <= 0) {
-        alert("Preencha corretamente o valor e o número de parcelas.");
+      if (!valor || parcelas <= 0) {
+        alert("Preencha corretamente o valor.");
         return;
       }
 
