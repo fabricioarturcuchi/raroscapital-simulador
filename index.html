@@ -159,7 +159,7 @@
       </select>
 
       <label for="valor">Valor total (R$) *</label> 
-      <input type="text" id="valor" oninput="mascaraMoeda(this)" required />
+      <input type="text" id="valor" oninput="mascaraMoeda(this)" required autocomplete="off" />
 
       <label for="parcelas">Parcelas</label>
       <input type="number" id="parcelas" name="parcelas" readonly>
@@ -191,7 +191,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-  // Define constantes das parcelas e taxas
   const parcelasMap = { imovel: 220, auto: 84 };
   const taxaMap = { imovel: 0.22, auto: 0.16 };
   const minMaxValor = {
@@ -199,152 +198,171 @@
     auto: { min: 65000, max: 130000 }
   };
 
-  // Atualiza parcelas automaticamente baseado no tipo
   function atualizarParcelas() {
     const tipo = document.getElementById('tipo').value;
     document.getElementById('parcelas').value = parcelasMap[tipo];
   }
 
-  // Máscara para moeda em real
+  // Máscara moeda pt-BR (R$xxx.xxx,xx)
   function mascaraMoeda(input) {
     let valor = input.value;
 
-    // Remove tudo que não for número
+    // Remove tudo exceto números
     valor = valor.replace(/\D/g, '');
 
-    // Transformar em número com centavos
-    valor = (parseInt(valor, 10) / 100).toFixed(2) + '';
-    valor = valor.replace('.', ',');
+    // Formata o número para moeda BRL com separadores milhar e decimal
+    valor = (parseInt(valor, 10) || 0).toString();
 
-    // Adiciona o R$
-    valor = 'R$ ' + valor;
+    // Limpa zeros à esquerda para evitar confusão
+    valor = valor.replace(/^0+/, '');
 
-    input.value = valor;
+    // Se vazio, volta vazio
+    if(valor === '') {
+      input.value = '';
+      return;
+    }
+
+    // Coloca vírgula para os 2 últimos dígitos (centavos)
+    if(valor.length === 1) {
+      valor = '0,0' + valor;
+    } else if(valor.length === 2) {
+      valor = '0,' + valor;
+    } else {
+      let intPart = valor.slice(0, -2);
+      let decPart = valor.slice(-2);
+      // Adiciona pontos como separador de milhar
+      intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      valor = intPart + ',' + decPart;
+    }
+    input.value = 'R$ ' + valor;
   }
 
-  // Máscara para telefone brasileiro (99) 99999-9999
+  // Máscara telefone (99) 99999-9999
   function mascaraTelefone(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0,11);
-
-    v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
-    v = v.replace(/(\d{5})(\d{1,4})$/, '$1-$2');
-    input.value = v;
+    if (v.length > 6) {
+      input.value = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    } else if (v.length > 2) {
+      input.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    } else if (v.length > 0) {
+      input.value = `(${v}`;
+    }
   }
 
-  // Form submit: envia dados e mostra resultado simulador
+  // Form submit handler
   function handleFormSubmit(event) {
     event.preventDefault();
 
-    // Validação manual
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const tipo = document.getElementById('tipo').value;
-    let valorStr = document.getElementById('valor').value.trim();
+    const valorRaw = document.getElementById('valor').value.trim();
 
-    if (!name || !email || !phone || !valorStr) {
+    // Validações básicas
+    if (!name || !email || !phone || !valorRaw) {
       alert('Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
 
-    // Limpar valor e converter para float
-    valorStr = valorStr.replace(/\D/g, '');
-    const valor = parseFloat(valorStr) / 100;
-
-    const { min, max } = minMaxValor[tipo];
-    if (valor < min || valor > max) {
-      alert(`Para ${tipo === 'imovel' ? 'imóveis' : 'automóveis'}, o valor deve estar entre R$ ${min.toLocaleString('pt-BR')} e R$ ${max.toLocaleString('pt-BR')}.`);
+    // Extrai número do valor
+    let valorNum = valorRaw.replace(/[R$\.\s]/g, '').replace(',', '.');
+    valorNum = parseFloat(valorNum);
+    if (isNaN(valorNum)) {
+      alert('Informe um valor válido.');
       return false;
     }
 
-    // Atualiza parcelas
-    document.getElementById('parcelas').value = parcelasMap[tipo];
+    const { min, max } = minMaxValor[tipo];
+    if (valorNum < min || valorNum > max) {
+      alert(`O valor para consórcio de ${tipo === 'imovel' ? 'Imóvel' : 'Automóvel'} deve ser entre R$ ${min.toLocaleString('pt-BR')} e R$ ${max.toLocaleString('pt-BR')}.`);
+      return false;
+    }
 
-    // Calcula e mostra resultado
-    mostrarResultado({name, email, phone, tipo, valor});
-    enviarEmailForm(event.target);  // envia o form sem recarregar
-    return false;
-  }
-
-  // Mostrar resultado simulação
-  function mostrarResultado({name, email, phone, tipo, valor}) {
     const parcelas = parcelasMap[tipo];
     const taxa = taxaMap[tipo];
-    const valorTotal = valor + valor * taxa;
-    const valorParcela = valorTotal / parcelas;
 
-    // Formatação PT-BR
-    const formatBRL = (num) => num.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    // Calcula valor total com taxa
+    const valorTotal = valorNum * (1 + taxa);
 
+    // Calcula parcela mensal
+    const parcelaMensal = valorTotal / parcelas;
+
+    // Exibe resultado
     document.getElementById('resNome').textContent = name;
     document.getElementById('resEmail').textContent = email;
     document.getElementById('resPhone').textContent = phone;
     document.getElementById('resTipo').textContent = tipo === 'imovel' ? 'Imóvel' : 'Automóvel';
-    document.getElementById('resValor').textContent = formatBRL(valor);
-    document.getElementById('resParcelas').textContent = parcelas + 'x';
-    document.getElementById('resTaxa').textContent = (taxa * 100) + '%';
-    document.getElementById('resValorTotal').textContent = formatBRL(valorTotal);
-    document.getElementById('resParcela').textContent = formatBRL(valorParcela);
+    document.getElementById('resValor').textContent = valorNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('resParcelas').textContent = parcelas;
+    document.getElementById('resTaxa').textContent = (taxa * 100).toFixed(2) + '%';
+    document.getElementById('resValorTotal').textContent = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    document.getElementById('resParcela').textContent = parcelaMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     document.getElementById('resultado').style.display = 'block';
+
+    // Enviar lead via fetch sem mensagem para o usuário
+    enviarLead({name, email, phone, tipo, valor: valorNum});
+
+    return false;
   }
 
-  // Envio do formulário usando fetch para FormSubmit (sem recarregar)
-  function enviarEmailForm(form) {
-    const data = new FormData(form);
-    data.append('_captcha', 'false');
-    data.append('_subject', 'Novo lead de simulação - Raros Capital');
-    data.append('_template', 'table');
+  // Envia dados para API de lead (exemplo)
+  function enviarLead(data) {
+    // Exemplo: substituir URL pelo endpoint real
+    const url = 'https://app.pipefy.com/lead'; 
 
-    fetch('https://formsubmit.co/ajax/fabricio@raroscapital.com.br', {
+    fetch(url, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: data
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Erro no envio');
-      // Não mostra mensagem, conforme solicitado
-    })
-    .catch(err => {
-      console.error('Erro ao enviar lead:', err);
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(() => {
+      // Não exibir mensagens ao usuário, falha silenciosa
     });
   }
 
-  // Gerar PDF do resultado
+  // Inicializa parcelas no carregamento
+  window.onload = () => {
+    atualizarParcelas();
+  };
+
+  // Gera PDF usando jsPDF com layout bonito e frase motivacional
   async function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     const imgUrl = 'https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png';
-
-    // Adiciona logo no topo
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.src = imgUrl;
 
     img.onload = function () {
-      doc.addImage(img, 'PNG', 10, 10, 50, 20);
-      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor('#1d3557');
-      doc.text('Raros Capital', 70, 25);
+      doc.setFontSize(22);
+      doc.text('Raros Capital', 70, 20);
+
+      doc.addImage(img, 'PNG', 15, 10, 40, 20);
+
+      doc.setDrawColor('#e63946');
+      doc.setLineWidth(1.5);
+      doc.line(15, 30, 195, 30);
 
       doc.setFontSize(18);
       doc.setTextColor('#e63946');
-      doc.text('Resultado da Simulação', 10, 45);
+      doc.text('Resultado da Simulação', 15, 40);
 
       doc.setFontSize(12);
       doc.setTextColor('#000');
-
-      // Dados do cliente e simulação
-      const leftCol = 10;
-      let y = 55;
-      const lineHeight = 7;
+      let y = 50;
+      const lineHeight = 10;
 
       function addLine(label, value) {
         doc.setFont(undefined, 'bold');
-        doc.text(label, leftCol, y);
+        doc.text(label, 15, y);
         doc.setFont(undefined, 'normal');
-        doc.text(value, leftCol + 50, y);
+        doc.text(value, 80, y);
         y += lineHeight;
       }
 
@@ -356,22 +374,18 @@
       addLine('Valor solicitado:', document.getElementById('resValor').textContent);
       addLine('Parcelas:', document.getElementById('resParcelas').textContent);
       addLine('Taxa administrativa:', document.getElementById('resTaxa').textContent);
-      addLine('Valor total c/ taxa:', document.getElementById('resValorTotal').textContent);
-      addLine('Parcela mensal:', document.getElementById('resParcela').textContent);
+      addLine('Valor total com taxa:', document.getElementById('resValorTotal').textContent);
+      addLine('Valor da parcela mensal:', document.getElementById('resParcela').textContent);
 
       y += 15;
       doc.setFontSize(14);
-      doc.setTextColor('#2a3a54');
-      doc.text('Obrigado por usar nosso simulador!', leftCol, y);
+      doc.setTextColor('#457b9d');
+      doc.setFont(undefined, 'italic');
+      doc.text('Invista no seu sonho hoje e conquiste o futuro que merece!', 15, y);
 
-      doc.save('simulacao_raros_capital.pdf');
-    }
+      doc.save('Simulacao_Consorcio_RarosCapital.pdf');
+    };
   }
-
-  // Inicializa parcelas padrão ao carregar a página
-  document.addEventListener('DOMContentLoaded', () => {
-    atualizarParcelas();
-  });
 </script>
 
 </body>
