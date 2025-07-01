@@ -13,12 +13,12 @@
     <h1>Descubra qual consórcio combina com você</h1>
     <p>Simule agora e receba sua oferta exclusiva da Raros Capital diretamente no seu e-mail.</p>
 
-    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="return validateForm()" id="lead-form">
+    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="return showSimulator()" id="lead-form">
       <input type="text" name="name" placeholder="Seu nome completo" required>
       <input type="email" name="email" placeholder="Seu e-mail" required>
       <input type="tel" name="phone" placeholder="Seu WhatsApp com DDD" required>
 
-      <!-- Campos ocultos para configurar envio -->
+      <!-- FormSubmit hidden fields -->
       <input type="hidden" name="_subject" value="Novo lead de simulação - Raros Capital">
       <input type="hidden" name="_captcha" value="false">
       <input type="hidden" name="_template" value="table">
@@ -26,17 +26,77 @@
       <button type="submit">Simular Agora</button>
     </form>
 
+    <!-- Confirmação -->
     <div id="thanks" class="hidden">
       <h2>Pronto! 🎯</h2>
-      <p>Você receberá em breve no seu e-mail e WhatsApp a simulação ideal para o seu perfil. A equipe da Raros Capital entrará em contato com você.</p>
+      <p>Você receberá sua proposta exclusiva em breve.<br>Enquanto isso, faça uma simulação:</p>
+      <button onclick="openSimulator()">Simular Consórcio</button>
+    </div>
+
+    <!-- Simulador de consórcio -->
+    <div id="simulator" class="hidden">
+      <h2>Simulador de Consórcio</h2>
+      <label>
+        Tipo:
+        <select id="tipo">
+          <option value="imovel">Imóvel</option>
+          <option value="auto">Automóvel</option>
+        </select>
+      </label>
+      <input type="number" id="valor" placeholder="Valor total (R$)" />
+      <input type="number" id="parcelas" placeholder="Quantidade de parcelas" />
+      <button onclick="calcular()">Calcular</button>
+      <div id="resultado"></div>
     </div>
   </div>
 
   <script>
-    function validateForm() {
+    function showSimulator() {
       document.getElementById("lead-form").classList.add("hidden");
       document.getElementById("thanks").classList.remove("hidden");
-      return true; // Continua com envio do formulário
+      return true;
+    }
+
+    function openSimulator() {
+      document.getElementById("thanks").classList.add("hidden");
+      document.getElementById("simulator").classList.remove("hidden");
+    }
+
+    function calcular() {
+      const tipo = document.getElementById("tipo").value;
+      const valor = parseFloat(document.getElementById("valor").value);
+      const parcelas = parseInt(document.getElementById("parcelas").value);
+
+      let minValor = 0, maxValor = 0, taxaAdm = 0;
+
+      if (tipo === "imovel") {
+        minValor = 200000;
+        maxValor = 500000;
+        taxaAdm = 0.22;
+      } else {
+        minValor = 65000;
+        maxValor = 130000;
+        taxaAdm = 0.16;
+      }
+
+      if (!valor || !parcelas || parcelas <= 0) {
+        alert("Preencha corretamente o valor e o número de parcelas.");
+        return;
+      }
+
+      if (valor < minValor || valor > maxValor) {
+        alert(`Para ${tipo === "imovel" ? "imóveis" : "automóveis"}, o valor deve estar entre R$ ${minValor.toLocaleString()} e R$ ${maxValor.toLocaleString()}.`);
+        return;
+      }
+
+      const totalComTaxa = valor + (valor * taxaAdm);
+      const parcelaMensal = totalComTaxa / parcelas;
+
+      document.getElementById("resultado").innerHTML = `
+        <p><strong>Tipo:</strong> ${tipo === "imovel" ? "Imóvel" : "Automóvel"}</p>
+        <p>Valor total com taxa administrativa (${(taxaAdm * 100)}%): <strong>R$ ${totalComTaxa.toFixed(2)}</strong></p>
+        <p>Parcela estimada: <strong>R$ ${parcelaMensal.toFixed(2)}</strong> em ${parcelas}x</p>
+      `;
     }
   </script>
 </body>
