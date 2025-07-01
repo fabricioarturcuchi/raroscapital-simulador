@@ -1,105 +1,378 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Raros Capital - Simulador</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Raros Capital - Simulador de Consórcio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0; padding: 20px;
+    background: #f0f3f7;
+    color: #1d3557;
+  }
+  .container {
+    max-width: 960px;
+    margin: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 25px 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .left, .right {
+    flex: 1 1 400px;
+    min-width: 300px;
+  }
+  .logo {
+    max-width: 180px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-weight: 700;
+    font-size: 28px;
+    color: #1d3557;
+  }
+  p.subtitle {
+    color: #555;
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin-top: 15px;
+    color: #2a3a54;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    transition: border-color 0.3s ease;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #457b9d;
+  }
+  input[readonly] {
+    background: #f5f7fa;
+    cursor: not-allowed;
+  }
+  button {
+    margin-top: 25px;
+    width: 100%;
+    background-color: #1d3557;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  button:hover {
+    background-color: #457b9d;
+  }
+  #resultado {
+    margin-top: 30px;
+    padding: 25px;
+    background: #eaf4f9;
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+    color: #1d3557;
+  }
+  #resultado h3 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+  #resultado p {
+    font-size: 16px;
+    margin: 6px 0;
+  }
+  #resultado p span.value {
+    font-weight: 700;
+    font-size: 20px;
+    color: #e63946;
+  }
+  .thanks {
+    margin-top: 30px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #2a3a54;
+    text-align: center;
+  }
+  /* Flex align labels and inputs */
+  form label {
+    font-size: 14px;
+  }
+  /* PDF button */
+  #btnPdf {
+    margin-top: 15px;
+    background-color: #e63946;
+  }
+  #btnPdf:hover {
+    background-color: #a62a32;
+  }
+  @media(max-width: 720px) {
+    .container {
+      flex-direction: column;
+    }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <img src="https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png" alt="Raros Capital" class="logo">
 
-    <h1>Descubra qual consórcio combina com você</h1>
-    <p>Simule agora e receba sua oferta exclusiva da Raros Capital diretamente no seu e-mail.</p>
+<div class="container" id="contentToPrint">
+  <div class="left">
+    <img src="https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png" alt="Raros Capital Logo" class="logo" />
+    <h1>Raros Capital</h1>
+    <p class="subtitle">Descubra qual consórcio combina com você. Preencha seus dados para simular.</p>
 
-    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="showSimulator()" id="lead-form" target="hidden_iframe">
-      <input type="text" name="name" placeholder="Seu nome completo" required>
-      <input type="email" name="email" placeholder="Seu e-mail" required>
-      <input type="tel" name="phone" placeholder="Seu WhatsApp com DDD" required>
+    <form id="lead-form" onsubmit="return handleFormSubmit(event)" novalidate>
+      <label for="name">Nome completo *</label>
+      <input type="text" id="name" name="name" placeholder="Seu nome completo" required>
 
-      <!-- Configurações do FormSubmit -->
-      <input type="hidden" name="_subject" value="Novo lead de simulação - Raros Capital">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
+      <label for="email">E-mail *</label>
+      <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
 
-      <button type="submit">Simular Agora</button>
+      <label for="phone">WhatsApp (com DDD) *</label>
+      <input type="tel" id="phone" name="phone" placeholder="(99) 99999-9999" required maxlength="15" oninput="mascaraTelefone(this)" >
+
+      <label for="tipo">Tipo de Consórcio *</label>
+      <select id="tipo" name="tipo" onchange="atualizarParcelas()">
+        <option value="imovel">Imóvel</option>
+        <option value="auto">Automóvel</option>
+      </select>
+
+      <label for="valor">Valor total (R$) *</label>
+      <input type="text" id="valor" name="valor" placeholder="R$ 0,00" oninput="mascaraMoeda(this)" required>
+
+      <label for="parcelas">Parcelas</label>
+      <input type="number" id="parcelas" name="parcelas" readonly>
+
+      <button type="submit">Gerar Simulação</button>
     </form>
-
-    <!-- Simulador de consórcio -->
-    <div id="simulator" class="hidden">
-      <h2>Simulador de Consórcio</h2>
-      <label>
-        Tipo:
-        <select id="tipo" onchange="atualizarParcelas()">
-          <option value="imovel">Imóvel</option>
-          <option value="auto">Automóvel</option>
-        </select>
-      </label>
-
-      <input type="number" id="valor" placeholder="Valor total (R$)" />
-
-      <input type="number" id="parcelas" placeholder="Parcelas" readonly />
-
-      <button type="button" onclick="calcular()">Calcular</button>
-      <div id="resultado"></div>
-    </div>
-
-    <!-- Iframe oculto para submissão silenciosa -->
-    <iframe name="hidden_iframe" style="display:none;"></iframe>
   </div>
 
-  <script>
-    function showSimulator() {
-      setTimeout(() => {
-        document.getElementById("lead-form").classList.add("hidden");
-        document.getElementById("simulator").classList.remove("hidden");
-        atualizarParcelas(); // define parcelas automaticamente com base no tipo
-      }, 300);
+  <div class="right">
+    <div id="resultado" style="display:none;">
+      <h3>Resultado da Simulação</h3>
+      <p><strong>Nome:</strong> <span id="resNome"></span></p>
+      <p><strong>E-mail:</strong> <span id="resEmail"></span></p>
+      <p><strong>WhatsApp:</strong> <span id="resPhone"></span></p>
+      <hr />
+      <p><strong>Tipo de consórcio:</strong> <span id="resTipo"></span></p>
+      <p><strong>Valor solicitado:</strong> <span class="value" id="resValor"></span></p>
+      <p><strong>Parcelas:</strong> <span id="resParcelas"></span></p>
+      <p><strong>Taxa administrativa:</strong> <span id="resTaxa"></span></p>
+      <p><strong>Valor total com taxa:</strong> <span class="value" id="resValorTotal"></span></p>
+      <p><strong>Valor da parcela mensal:</strong> <span class="value" id="resParcela"></span></p>
+      <div class="thanks">Obrigado por usar nosso simulador!</div>
+      <button id="btnPdf" onclick="gerarPDF()">Baixar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- jsPDF CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // Define constantes das parcelas e taxas
+  const parcelasMap = { imovel: 220, auto: 84 };
+  const taxaMap = { imovel: 0.22, auto: 0.16 };
+  const minMaxValor = {
+    imovel: { min: 200000, max: 500000 },
+    auto: { min: 65000, max: 130000 }
+  };
+
+  // Atualiza parcelas automaticamente baseado no tipo
+  function atualizarParcelas() {
+    const tipo = document.getElementById('tipo').value;
+    document.getElementById('parcelas').value = parcelasMap[tipo];
+  }
+
+  // Máscara para moeda em real
+  function mascaraMoeda(input) {
+    let valor = input.value;
+
+    // Remove tudo que não for número
+    valor = valor.replace(/\D/g, '');
+
+    // Transformar em número com centavos
+    valor = (parseInt(valor, 10) / 100).toFixed(2) + '';
+    valor = valor.replace('.', ',');
+
+    // Adiciona o R$
+    valor = 'R$ ' + valor;
+
+    input.value = valor;
+  }
+
+  // Máscara para telefone brasileiro (99) 99999-9999
+  function mascaraTelefone(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0,11);
+
+    v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+    v = v.replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+    input.value = v;
+  }
+
+  // Form submit: envia dados e mostra resultado simulador
+  function handleFormSubmit(event) {
+    event.preventDefault();
+
+    // Validação manual
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const tipo = document.getElementById('tipo').value;
+    let valorStr = document.getElementById('valor').value.trim();
+
+    if (!name || !email || !phone || !valorStr) {
+      alert('Por favor, preencha todos os campos obrigatórios.');
+      return false;
     }
 
-    function atualizarParcelas() {
-      const tipo = document.getElementById("tipo").value;
-      const parcelas = tipo === "imovel" ? 220 : 84;
-      document.getElementById("parcelas").value = parcelas;
+    // Limpar valor e converter para float
+    valorStr = valorStr.replace(/\D/g, '');
+    const valor = parseFloat(valorStr) / 100;
+
+    const { min, max } = minMaxValor[tipo];
+    if (valor < min || valor > max) {
+      alert(`Para ${tipo === 'imovel' ? 'imóveis' : 'automóveis'}, o valor deve estar entre R$ ${min.toLocaleString('pt-BR')} e R$ ${max.toLocaleString('pt-BR')}.`);
+      return false;
     }
 
-    function calcular() {
-      const tipo = document.getElementById("tipo").value;
-      const valor = parseFloat(document.getElementById("valor").value);
-      const parcelas = parseInt(document.getElementById("parcelas").value);
+    // Atualiza parcelas
+    document.getElementById('parcelas').value = parcelasMap[tipo];
 
-      let minValor = 0, maxValor = 0, taxaAdm = 0;
+    // Calcula e mostra resultado
+    mostrarResultado({name, email, phone, tipo, valor});
+    enviarEmailForm(event.target);  // envia o form sem recarregar
+    return false;
+  }
 
-      if (tipo === "imovel") {
-        minValor = 200000;
-        maxValor = 500000;
-        taxaAdm = 0.22;
-      } else {
-        minValor = 65000;
-        maxValor = 130000;
-        taxaAdm = 0.16;
+  // Mostrar resultado simulação
+  function mostrarResultado({name, email, phone, tipo, valor}) {
+    const parcelas = parcelasMap[tipo];
+    const taxa = taxaMap[tipo];
+    const valorTotal = valor + valor * taxa;
+    const valorParcela = valorTotal / parcelas;
+
+    // Formatação PT-BR
+    const formatBRL = (num) => num.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+    document.getElementById('resNome').textContent = name;
+    document.getElementById('resEmail').textContent = email;
+    document.getElementById('resPhone').textContent = phone;
+    document.getElementById('resTipo').textContent = tipo === 'imovel' ? 'Imóvel' : 'Automóvel';
+    document.getElementById('resValor').textContent = formatBRL(valor);
+    document.getElementById('resParcelas').textContent = parcelas + 'x';
+    document.getElementById('resTaxa').textContent = (taxa * 100) + '%';
+    document.getElementById('resValorTotal').textContent = formatBRL(valorTotal);
+    document.getElementById('resParcela').textContent = formatBRL(valorParcela);
+
+    document.getElementById('resultado').style.display = 'block';
+  }
+
+  // Envio do formulário usando fetch para FormSubmit (sem recarregar)
+  function enviarEmailForm(form) {
+    const data = new FormData(form);
+    data.append('_captcha', 'false');
+    data.append('_subject', 'Novo lead de simulação - Raros Capital');
+    data.append('_template', 'table');
+
+    fetch('https://formsubmit.co/ajax/fabricio@raroscapital.com.br', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: data
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Erro no envio');
+      // Não mostra mensagem, conforme solicitado
+    })
+    .catch(err => {
+      console.error('Erro ao enviar lead:', err);
+    });
+  }
+
+  // Gerar PDF do resultado
+  async function gerarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const imgUrl = 'https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png';
+
+    // Adiciona logo no topo
+    const img = new Image();
+    img.src = imgUrl;
+
+    img.onload = function () {
+      doc.addImage(img, 'PNG', 10, 10, 50, 20);
+      doc.setFontSize(22);
+      doc.setTextColor('#1d3557');
+      doc.text('Raros Capital', 70, 25);
+
+      doc.setFontSize(18);
+      doc.setTextColor('#e63946');
+      doc.text('Resultado da Simulação', 10, 45);
+
+      doc.setFontSize(12);
+      doc.setTextColor('#000');
+
+      // Dados do cliente e simulação
+      const leftCol = 10;
+      let y = 55;
+      const lineHeight = 7;
+
+      function addLine(label, value) {
+        doc.setFont(undefined, 'bold');
+        doc.text(label, leftCol, y);
+        doc.setFont(undefined, 'normal');
+        doc.text(value, leftCol + 50, y);
+        y += lineHeight;
       }
 
-      if (!valor || parcelas <= 0) {
-        alert("Preencha corretamente o valor.");
-        return;
-      }
+      addLine('Nome:', document.getElementById('resNome').textContent);
+      addLine('E-mail:', document.getElementById('resEmail').textContent);
+      addLine('WhatsApp:', document.getElementById('resPhone').textContent);
+      y += 5;
+      addLine('Tipo de consórcio:', document.getElementById('resTipo').textContent);
+      addLine('Valor solicitado:', document.getElementById('resValor').textContent);
+      addLine('Parcelas:', document.getElementById('resParcelas').textContent);
+      addLine('Taxa administrativa:', document.getElementById('resTaxa').textContent);
+      addLine('Valor total c/ taxa:', document.getElementById('resValorTotal').textContent);
+      addLine('Parcela mensal:', document.getElementById('resParcela').textContent);
 
-      if (valor < minValor || valor > maxValor) {
-        alert(`Para ${tipo === "imovel" ? "imóveis" : "automóveis"}, o valor deve estar entre R$ ${minValor.toLocaleString()} e R$ ${maxValor.toLocaleString()}.`);
-        return;
-      }
+      y += 15;
+      doc.setFontSize(14);
+      doc.setTextColor('#2a3a54');
+      doc.text('Obrigado por usar nosso simulador!', leftCol, y);
 
-      const totalComTaxa = valor + (valor * taxaAdm);
-      const parcelaMensal = totalComTaxa / parcelas;
-
-      document.getElementById("resultado").innerHTML = `
-        <p><strong>Tipo:</strong> ${tipo === "imovel" ? "Imóvel" : "Automóvel"}</p>
-        <p>Valor total com taxa administrativa (${(taxaAdm * 100)}%): <strong>R$ ${totalComTaxa.toFixed(2)}</strong></p>
-        <p>Parcela estimada: <strong>R$ ${parcelaMensal.toFixed(2)}</strong> em ${parcelas}x</p>
-      `;
+      doc.save('simulacao_raros_capital.pdf');
     }
-  </script>
+  }
+
+  // Inicializa parcelas padrão ao carregar a página
+  document.addEventListener('DOMContentLoaded', () => {
+    atualizarParcelas();
+  });
+</script>
+
 </body>
 </html>
