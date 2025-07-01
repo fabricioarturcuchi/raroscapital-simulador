@@ -13,25 +13,17 @@
     <h1>Descubra qual consórcio combina com você</h1>
     <p>Simule agora e receba sua oferta exclusiva da Raros Capital diretamente no seu e-mail.</p>
 
-    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="return showSimulator()" id="lead-form">
+    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="showSimulator()" id="lead-form" target="hidden_iframe">
       <input type="text" name="name" placeholder="Seu nome completo" required>
       <input type="email" name="email" placeholder="Seu e-mail" required>
       <input type="tel" name="phone" placeholder="Seu WhatsApp com DDD" required>
 
-      <!-- FormSubmit hidden fields -->
       <input type="hidden" name="_subject" value="Novo lead de simulação - Raros Capital">
       <input type="hidden" name="_captcha" value="false">
       <input type="hidden" name="_template" value="table">
 
       <button type="submit">Simular Agora</button>
     </form>
-
-    <!-- Confirmação -->
-    <div id="thanks" class="hidden">
-      <h2>Pronto! 🎯</h2>
-      <p>Você receberá sua proposta exclusiva em breve.<br>Enquanto isso, faça uma simulação:</p>
-      <button onclick="openSimulator()">Simular Consórcio</button>
-    </div>
 
     <!-- Simulador de consórcio -->
     <div id="simulator" class="hidden">
@@ -48,18 +40,17 @@
       <button onclick="calcular()">Calcular</button>
       <div id="resultado"></div>
     </div>
+
+    <!-- Iframe invisível para submissão silenciosa -->
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
   </div>
 
   <script>
     function showSimulator() {
-      document.getElementById("lead-form").classList.add("hidden");
-      document.getElementById("thanks").classList.remove("hidden");
-      return true;
-    }
-
-    function openSimulator() {
-      document.getElementById("thanks").classList.add("hidden");
-      document.getElementById("simulator").classList.remove("hidden");
+      setTimeout(() => {
+        document.getElementById("lead-form").classList.add("hidden");
+        document.getElementById("simulator").classList.remove("hidden");
+      }, 300); // pequeno atraso para não interromper envio
     }
 
     function calcular() {
