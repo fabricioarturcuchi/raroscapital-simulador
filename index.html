@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Raros Capital - Simulador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <img src="https://i.postimg.cc/wMPWky1K/Sem-t-tulo-removebg-preview.png" alt="Raros Capital" class="logo">
+
+    <h1>Descubra qual consórcio combina com você</h1>
+    <p>Simule agora e receba sua oferta exclusiva da Raros Capital diretamente no seu e-mail.</p>
+
+    <form action="https://formsubmit.co/fabricio@raroscapital.com.br" method="POST" onsubmit="return validateForm()" id="lead-form">
+      <input type="text" name="name" placeholder="Seu nome completo" required>
+      <input type="email" name="email" placeholder="Seu e-mail" required>
+      <input type="tel" name="phone" placeholder="Seu WhatsApp com DDD" required>
+
+      <!-- Campos ocultos para configurar envio -->
+      <input type="hidden" name="_subject" value="Novo lead de simulação - Raros Capital">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+
+      <button type="submit">Simular Agora</button>
+    </form>
+
+    <div id="thanks" class="hidden">
+      <h2>Pronto! 🎯</h2>
+      <p>Você receberá em breve no seu e-mail e WhatsApp a simulação ideal para o seu perfil. A equipe da Raros Capital entrará em contato com você.</p>
+    </div>
+  </div>
+
+  <script>
+    function validateForm() {
+      document.getElementById("lead-form").classList.add("hidden");
+      document.getElementById("thanks").classList.remove("hidden");
+      return true; // Continua com envio do formulário
+    }
+  </script>
+</body>
+</html>
